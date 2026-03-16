@@ -1,0 +1,30 @@
+{
+  "name": "gws-reauth-web-client",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Self-serve OAuth reauth broker for gws (Google Workspace CLI) on headless servers",
+  "author": "ycmjbot",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ycmjbot/gws-reauth-web-client"
+  },
+  "keywords": [
+    "gws",
+    "google-workspace",
+    "oauth",
+    "reauth",
+    "headless"
+  ],
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "rate-limiter-flexible": "^5.0.5"
+  }
+}

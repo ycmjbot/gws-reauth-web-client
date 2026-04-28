@@ -35,7 +35,7 @@ export default function mintRoutes(config) {
         error: 'Superseded by a freshly minted reauth link',
       });
     }
-    const { revoked: revokedUnusedLinks } = revokeUnusedTokens(tokens);
+    const revokedUnusedLinks = revokeUnusedTokens(tokens);
 
     const ttlMs = config.LINK_TTL_DAYS * 24 * 60 * 60 * 1000;
     const { raw, tokenHash, createdAt, expiresAt } = mintToken(ttlMs);

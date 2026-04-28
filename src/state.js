@@ -129,14 +129,14 @@ export async function finalizeActiveSession(status, details = {}) {
   return active;
 }
 
-export function revokeUnusedTokens(tokens, reason = 'superseded') {
+export function revokeUnusedTokens(tokens) {
   let revoked = 0;
   for (const [tokenHash, record] of Object.entries(tokens)) {
     if (!record || record.usedAt) continue;
     delete tokens[tokenHash];
     revoked += 1;
   }
-  return { revoked, reason };
+  return revoked;
 }
 
 export function cleanupExpiredAndStaleState() {

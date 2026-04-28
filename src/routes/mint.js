@@ -6,7 +6,8 @@ import {
   mintToken,
   getBaseUrl,
   cleanupExpiredAndStaleState,
-  nowTimestamp,
+  finishActiveSession,
+  revokeUnusedTokens,
 } from '../state.js';
 
 export default function mintRoutes(config) {
@@ -20,21 +21,21 @@ export default function mintRoutes(config) {
     cleanupExpiredAndStaleState();
 
     const { tokens, sessions } = getState();
-    const existing = Object.entries(tokens)
-      .map(([tokenHash, record]) => ({ tokenHash, record }))
-      .filter(({ record }) => !record.usedAt && record.expiresAt > nowTimestamp())
-      .sort((a, b) => b.record.createdAt - a.record.createdAt)[0];
-
     const baseUrl = getBaseUrl(req);
 
-    if (existing) {
-      return res.json({
-        ok: true,
-        startUrl: `${baseUrl}/s/${existing.record.publicId}`,
-        reused: true,
-        expiresAt: existing.record.expiresAt,
+    // Minting from the trusted local API means the operator wants a clean new
+    // attempt. Do not let an abandoned browser tab, Telegram preview, or old
+    // unused link block the next reauth. This is deliberately stricter than the
+    // public start route: old public links cannot cancel active sessions, but the
+    // internal broker can reset the flow atomically.
+    const replacedActiveSession = !!sessions.active;
+    if (sessions.active) {
+      finishActiveSession(sessions, 'error', {
+        result: 'Superseded by a freshly minted reauth link',
+        error: 'Superseded by a freshly minted reauth link',
       });
     }
+    const { revoked: revokedUnusedLinks } = revokeUnusedTokens(tokens);
 
     const ttlMs = config.LINK_TTL_DAYS * 24 * 60 * 60 * 1000;
     const { raw, tokenHash, createdAt, expiresAt } = mintToken(ttlMs);
@@ -51,6 +52,8 @@ export default function mintRoutes(config) {
       ok: true,
       startUrl: `${baseUrl}/s/${raw}`,
       reused: false,
+      replacedActiveSession,
+      revokedUnusedLinks,
       expiresAt,
     });
   });

@@ -21,8 +21,8 @@ export default function sessionRoutes() {
       return res.status(404).json({ ok: false, error: 'not_found' });
     }
 
-    const { id, status, result, error, startedAt, finishedAt } = session;
-    return res.json({ ok: true, id, status, result, error, startedAt, finishedAt });
+    const { id, status, result, error, startedAt, finishedAt, authUrl } = session;
+    return res.json({ ok: true, id, status, result, error, startedAt, finishedAt, authUrl });
   });
 
   router.get('/session/:id', (req, res) => {

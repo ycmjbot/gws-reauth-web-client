@@ -98,8 +98,7 @@ export function updateActiveSession(mutator) {
   return sessions.active;
 }
 
-export async function finalizeActiveSession(status, details = {}) {
-  const { tokens, sessions } = getState();
+export function finishActiveSession(sessions, status, details = {}) {
   const active = sessions.active;
   if (!active) return null;
 
@@ -119,8 +118,25 @@ export async function finalizeActiveSession(status, details = {}) {
     sessions.history = sessions.history.slice(-100);
   }
   sessions.active = null;
+  return active;
+}
+
+export async function finalizeActiveSession(status, details = {}) {
+  const { tokens, sessions } = getState();
+  const active = finishActiveSession(sessions, status, details);
+  if (!active) return null;
   setState(tokens, sessions);
   return active;
+}
+
+export function revokeUnusedTokens(tokens, reason = 'superseded') {
+  let revoked = 0;
+  for (const [tokenHash, record] of Object.entries(tokens)) {
+    if (!record || record.usedAt) continue;
+    delete tokens[tokenHash];
+    revoked += 1;
+  }
+  return { revoked, reason };
 }
 
 export function cleanupExpiredAndStaleState() {
